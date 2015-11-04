@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3D0398F318B813FF00A8A74D /* FOVARRectShape.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D0398F218B813FF00A8A74D /* FOVARRectShape.m */; };
+		3D19FA791BEA024000CED273 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3D19FA781BEA024000CED273 /* Launch Screen.storyboard */; };
 		3D3DD58518B81F250088881A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3D3DD58418B81F250088881A /* Images.xcassets */; };
 		3D4A121818E1BF3000E928F0 /* FOVSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4A121718E1BF3000E928F0 /* FOVSettingsViewController.m */; };
 		3D4A121B18E1C24E00E928F0 /* FOVGravityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4A121A18E1C24E00E928F0 /* FOVGravityViewController.m */; };
@@ -31,6 +32,7 @@
 /* Begin PBXFileReference section */
 		3D0398F118B813F600A8A74D /* FOVARRectShape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FOVARRectShape.h; sourceTree = "<group>"; };
 		3D0398F218B813FF00A8A74D /* FOVARRectShape.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FOVARRectShape.m; sourceTree = "<group>"; };
+		3D19FA781BEA024000CED273 /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		3D35A8071815141100BAB813 /* FOVARView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FOVARView.h; sourceTree = "<group>"; };
 		3D35A8081815141100BAB813 /* FOVARView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FOVARView.m; sourceTree = "<group>"; };
 		3D35A80F1815145A00BAB813 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -115,6 +117,7 @@
 				3DD0E01217F40EE900B6DD70 /* FOVfinder-Prefix.pch */,
 				3D89080E183A0576004EB2A7 /* FOVfinder-Info.plist */,
 				3D738987183A09E400B77997 /* main.m */,
+				3D19FA781BEA024000CED273 /* Launch Screen.storyboard */,
 			);
 			name = "Supporting Files";
 			path = FOVfinder;
@@ -194,7 +197,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = FOV;
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0710;
 				ORGANIZATIONNAME = "Tim Gleue • interactive software";
 				TargetAttributes = {
 					3D8907B1183A0576004EB2A7 = {
@@ -226,6 +229,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3D19FA791BEA024000CED273 /* Launch Screen.storyboard in Resources */,
 				3D3DD58518B81F250088881A /* Images.xcassets in Resources */,
 				3D738989183A0B0300B77997 /* Main.storyboard in Resources */,
 			);
@@ -280,6 +284,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/FOVfinder/FOVfinder-Info.plist";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.gleue-interactive.FOVfinder";
 				PRODUCT_NAME = FOVfinder;
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -299,6 +304,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				INFOPLIST_FILE = "$(SRCROOT)/FOVfinder/FOVfinder-Info.plist";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.gleue-interactive.FOVfinder";
 				PRODUCT_NAME = FOVfinder;
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -325,6 +331,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
