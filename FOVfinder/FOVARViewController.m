@@ -78,7 +78,7 @@
 
 	[super viewDidLoad];
     
-    _pinchFactor = 1.0;
+    _pinchFactor = 10.0;
     _currentSize = CGSizeMake(21.0, 29.7);
 
     self.navigationItem.title = [UIDeviceHardware platformString];
@@ -270,14 +270,14 @@
                     
                     fov = roundf(fov * _pinchFactor) / _pinchFactor;
                     
-                    if (fov < _targetFOVPortrait - 1.0) fov = _targetFOVPortrait - 1.0; else if (fov > _targetFOVPortrait + 1.0) fov = _targetFOVPortrait + 1.0;
+                    //if (fov < _targetFOVPortrait - 1.0) fov = _targetFOVPortrait - 1.0; else if (fov > _targetFOVPortrait + 1.0) fov = _targetFOVPortrait + 1.0;
                     
                 } else {
                     
                     fov = roundf(fov);
-
-                    if (fov < FOV_MIN) fov = FOV_MIN; else if (fov > FOV_MAX) fov = FOV_MAX;
                 }
+                
+                if (fov < FOV_MIN) fov = FOV_MIN; else if (fov > FOV_MAX) fov = FOV_MAX;
 
                 self.arView.fieldOfViewPortrait = fov;
                 
@@ -289,14 +289,14 @@
                     
                     fov = roundf(fov * _pinchFactor) / _pinchFactor;
                     
-                    if (fov < _targetFOVLandscape - 1.0) fov = _targetFOVLandscape - 1.0; else if (fov > _targetFOVLandscape + 1.0) fov = _targetFOVLandscape + 1.0;
+                    //if (fov < _targetFOVLandscape - 1.0) fov = _targetFOVLandscape - 1.0; else if (fov > _targetFOVLandscape + 1.0) fov = _targetFOVLandscape + 1.0;
                     
                 } else {
                     
                     fov = roundf(fov);
-                    
-                    if (fov < FOV_MIN) fov = FOV_MIN; else if (fov > FOV_MAX) fov = FOV_MAX;
                 }
+                
+                if (fov < FOV_MIN) fov = FOV_MIN; else if (fov > FOV_MAX) fov = FOV_MAX;
                 
                 self.arView.fieldOfViewLandscape = fov;
             }
