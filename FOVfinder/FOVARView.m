@@ -62,6 +62,9 @@
 
 @implementation FOVARView
 
+@synthesize fieldOfViewPortrait = _fieldOfViewPortrait;
+@synthesize fieldOfViewLandscape = _fieldOfViewLandscape;
+
 - (id)initWithFrame:(CGRect)frame {
     
 	self = [super initWithFrame:frame];
@@ -81,7 +84,12 @@
 }
 
 - (void)initARView {
-
+    
+    self.videoGravity = AVLayerVideoGravityResizeAspectFill;
+    
+    self.fovScalePortrait = 1.0;
+    self.fovScaleLandscape = 1.0;
+    
     // Make camera preview in background
     //
     self.captureView = [[UIView alloc] initWithFrame:self.bounds];
@@ -128,7 +136,9 @@
 
     self.captureLayer.frame = bounds;
     self.renderView.frame = bounds;
-    
+
+    [self computeFOVfromCameraFormat];
+
     [super layoutSubviews];
 }
 
@@ -180,38 +190,30 @@
     [self updateProjectionMatrix];
 }
 
-- (void)setFieldOfViewPortrait:(float)fieldOfViewPortrait {
+- (void)setFovScalePortrait:(CGFloat)fovScale {
 
-    _fieldOfViewPortrait = fieldOfViewPortrait;
-
-    [self updateProjectionMatrix];
-}
-
-- (void)setFieldOfViewLandscape:(float)fieldOfViewLandscape {
-    
-    _fieldOfViewLandscape = fieldOfViewLandscape;
+    _fovScalePortrait = fovScale;
     
     [self updateProjectionMatrix];
 }
 
-- (void)updateProjectionMatrix {
-
-    // Initialize camera & projection matrix
-    //
-    float fovy = UIInterfaceOrientationIsPortrait(self.interfaceOrienation) ? self.fieldOfViewPortrait : self.fieldOfViewLandscape;
-    float aspect = self.bounds.size.width / self.bounds.size.height;
+- (void)setFovScaleLandscape:(CGFloat)fovScale {
     
-    _projectionMatrix = GLKMatrix4MakePerspective(GLKMathDegreesToRadians(fovy), aspect, 0.1f, 1000.0f);
+    _fovScaleLandscape = fovScale;
+    
+    [self updateProjectionMatrix];
 }
 
 #pragma mark - Methods
 
 - (void)start {
-    
+
 	[self startCameraPreview];
 	[self startDisplayLink];
     
     [self setNeedsLayout];
+    
+    [self computeFOVfromCameraFormat];
 }
 
 - (void)stop {
@@ -220,11 +222,78 @@
 	[self stopCameraPreview];
 }
 
+#pragma mark - Projection management
+
+- (void)computeFOVfromCameraFormat {
+    
+    AVCaptureDeviceInput *input = self.captureSession.inputs.firstObject;
+    AVCaptureDevice *camera = input.device;
+    
+    if (camera) {
+        
+        NSLog(@"%s bounds = %@", __PRETTY_FUNCTION__, NSStringFromCGRect(self.bounds));
+        
+        CGFloat aspectRatio = self.bounds.size.width / self.bounds.size.height;
+        
+        if (aspectRatio > 1.0) aspectRatio = 1.0 / aspectRatio;
+        
+        NSLog(@"Active: %@", camera.activeFormat);
+        
+        CMFormatDescriptionRef description = camera.activeFormat.formatDescription;
+        CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(description);
+        
+        if ([self.videoGravity isEqualToString:AVLayerVideoGravityResizeAspectFill]) {
+            
+            CGFloat aspectWidth = (CGFloat)dimensions.height / aspectRatio;
+            CGFloat aspectHeight = (CGFloat)dimensions.width * aspectRatio;
+            
+            if (aspectWidth < dimensions.width) {
+                
+                CGFloat previewFOV = 2.0 * atan(aspectWidth / (CGFloat)dimensions.width * tan(0.5 * camera.activeFormat.videoFieldOfView * DEGREES_TO_RADIANS)) / DEGREES_TO_RADIANS;
+                
+                NSLog(@"Preview FOV: %g", previewFOV);
+                
+                if (dimensions.width > dimensions.height) {
+                    
+                    // Landscape camera format
+                    //
+                    // Portrait: vertical OpenGL FoV = horizontal Preview FoV
+                    // Landscape: vertical OpenGL FoV = horizontal Preview FoV * aspect ratio
+                    //
+                    _fieldOfViewPortrait = previewFOV;
+                    _fieldOfViewLandscape = previewFOV * aspectRatio;
+                    
+                    NSLog(@"Portrait FOV: %g", self.fieldOfViewPortrait);
+                    NSLog(@"Landscape FOV: %g", self.fieldOfViewLandscape);
+                }
+            }
+        }
+    }
+}
+
+- (void)updateProjectionMatrix {
+    
+    // Initialize camera & projection matrix
+    //
+    CGFloat fovy = UIInterfaceOrientationIsPortrait(self.interfaceOrienation) ? self.fieldOfViewPortrait * self.fovScalePortrait : self.fieldOfViewLandscape * self.fovScaleLandscape;
+    CGFloat aspect = self.bounds.size.width / self.bounds.size.height;
+    
+    _projectionMatrix = GLKMatrix4MakePerspective(GLKMathDegreesToRadians(fovy), aspect, 0.1f, 1000.0f);
+}
+
 #pragma mark - Camera management
 
 - (void)startCameraPreview {
 
 	AVCaptureDevice *camera = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+
+//    if ([camera lockForConfiguration:NULL]) {
+//
+//        // Lock auto focus to max distance
+//        //
+//        [camera setFocusModeLockedWithLensPosition:1.0 completionHandler:nil];
+//        [camera unlockForConfiguration];
+//    }
 
 	if (camera == nil) return;
 	

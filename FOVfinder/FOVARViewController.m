@@ -57,8 +57,6 @@
 @property (strong, nonatomic) FOVARRectShape *verticalShape;
 @property (strong, nonatomic) FOVARPlaneShape *horizontalShape;
 
-@property (strong, readonly) NSDictionary *fieldOfView;
-
 - (IBAction)handleTap:(id)sender;
 - (IBAction)handlePinch:(id)sender;
 
@@ -68,8 +66,6 @@
 @end
 
 @implementation FOVARViewController
-
-@synthesize fieldOfView = _fieldOfView;
 
 #pragma mark - View lifecycle
 
@@ -81,13 +77,6 @@
     _currentSize = CGSizeMake(21.0, 29.7);
 
     self.navigationItem.title = [UIDeviceHardware platformString];
-
-    NSString *device = [UIDeviceHardware platform];    
-    NSDictionary *dict = self.fieldOfView[device];
-    
-    self.arView.fieldOfViewPortrait = dict ? [dict[@"portrait"] floatValue] : 60.0;
-    self.arView.fieldOfViewLandscape = dict ? [dict[@"landscape"] floatValue] : 40.0;
-    self.arView.videoGravity = AVLayerVideoGravityResizeAspectFill;
 
     [self createShapesOfSize:_currentSize atDistance:SHAPE_DISTANCE height:SHAPE_HEIGHT];
 
@@ -101,7 +90,6 @@
 
     self.toolbarItems = @[ flex, info, flex ];
     
-    [self updateFOV];
     [self updateInfo];
 }
 
@@ -112,6 +100,8 @@
 	[self.arView start];
     
     self.arView.interfaceOrienation = self.interfaceOrientation;
+    
+    [self updateFOV];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -119,6 +109,8 @@
     [super viewDidAppear:animated];
     
     self.arView.interfaceOrienation = self.interfaceOrientation;
+    
+    [self updateFOV];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -156,43 +148,10 @@
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
+    
+    self.arView.interfaceOrienation = self.interfaceOrientation;
 
     [self updateFOV];
-    [self updateInfo];
-
-    self.arView.interfaceOrienation = self.interfaceOrientation;
-}
-
-#pragma mark - Accessors
-
-- (NSDictionary *)fieldOfView {
-
-    if (_fieldOfView == nil) {
-    
-        _fieldOfView = @{ @"iPhone5,1": @{ @"portrait": @55.0, @"landscape": @32.0 }, /* iPhone 5 & 5c */
-                          @"iPhone5,2": @{ @"portrait": @55.0, @"landscape": @32.0 },
-                          @"iPhone5,3": @{ @"portrait": @55.0, @"landscape": @32.0 },
-                          @"iPhone5,4": @{ @"portrait": @55.0, @"landscape": @32.0 },
-                          @"iPhone6,1": @{ @"portrait": @60.0, @"landscape": @37.0 }, /* iPhone 5s */
-                          @"iPhone6,2": @{ @"portrait": @60.0, @"landscape": @37.0 },
-                          @"iPod5,1":   @{ @"portrait": @54.33, @"landscape": @30.61 }, /* iPod 5G */
-                          @"iPad2,1":   @{ @"portrait": @44.0, @"landscape": @33.0 }, /* iPad 2 */
-                          @"iPad2,2":   @{ @"portrait": @44.0, @"landscape": @33.0 },
-                          @"iPad2,3":   @{ @"portrait": @44.0, @"landscape": @33.0 },
-                          @"iPad2,4":   @{ @"portrait": @44.0, @"landscape": @33.0 },
-                          @"iPad2,5":   @{ @"portrait": @42.16, @"landscape": @31.62 }, /* iPad mini */
-                          @"iPad2,6":   @{ @"portrait": @45.0, @"landscape": @34.0 },
-                          @"iPad2,7":   @{ @"portrait": @45.0, @"landscape": @34.0 },
-                          @"iPad3,1":   @{ @"portrait": @35.0, @"landscape": @27.0 }, /* iPad 3 */
-                          @"iPad3,2":   @{ @"portrait": @35.0, @"landscape": @27.0 },
-                          @"iPad3,3":   @{ @"portrait": @35.0, @"landscape": @27.0 },
-                          @"iPad4,1":   @{ @"portrait": @44.0, @"landscape": @34.0 }, /* iPad Air */
-                          @"iPad4,2":   @{ @"portrait": @44.0, @"landscape": @34.0 },
-                          @"i386":      @{ @"portrait": @60.0, @"landscape": @40.0 }, /* Simulator */
-                          @"x86_64":    @{ @"portrait": @60.0, @"landscape": @40.0 } };
-    }
-    
-    return _fieldOfView;
 }
 
 #pragma mark - Actions
@@ -214,53 +173,33 @@
             
         case UIGestureRecognizerStateBegan: {
             
-            startPortraitFOV = self.arView.fieldOfViewPortrait;
-            startLandscapeFOV = self.arView.fieldOfViewLandscape;
+            startPortraitFOV = self.arView.fieldOfViewPortrait * self.arView.fovScalePortrait;
+            startLandscapeFOV = self.arView.fieldOfViewLandscape * self.arView.fovScaleLandscape;
 
             break;
         }
             
         case UIGestureRecognizerStateChanged: {
             
-            CGFloat currentScale = recognizer.scale;
-
             if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation)) {
 
-                float fov = startPortraitFOV / currentScale;
+                float fov = startPortraitFOV / recognizer.scale;
                 
-                if (_pinchFactor != 1.0) {
-                    
-                    fov = roundf(fov * _pinchFactor) / _pinchFactor;
-                    
-                    //if (fov < _targetFOVPortrait - 1.0) fov = _targetFOVPortrait - 1.0; else if (fov > _targetFOVPortrait + 1.0) fov = _targetFOVPortrait + 1.0;
-                    
-                } else {
-                    
-                    fov = roundf(fov);
-                }
+                fov = roundf(fov * _pinchFactor) / _pinchFactor;
                 
                 if (fov < FOV_MIN) fov = FOV_MIN; else if (fov > FOV_MAX) fov = FOV_MAX;
 
-                self.arView.fieldOfViewPortrait = fov;
+                self.arView.fovScalePortrait = fov / self.arView.fieldOfViewPortrait;
                 
             } else {
                 
-                float fov = startLandscapeFOV / currentScale;
+                float fov = startLandscapeFOV / recognizer.scale;
                 
-                if (_pinchFactor != 1.0) {
-                    
-                    fov = roundf(fov * _pinchFactor) / _pinchFactor;
-                    
-                    //if (fov < _targetFOVLandscape - 1.0) fov = _targetFOVLandscape - 1.0; else if (fov > _targetFOVLandscape + 1.0) fov = _targetFOVLandscape + 1.0;
-                    
-                } else {
-                    
-                    fov = roundf(fov);
-                }
+                fov = roundf(fov * _pinchFactor) / _pinchFactor;
                 
                 if (fov < FOV_MIN) fov = FOV_MIN; else if (fov > FOV_MAX) fov = FOV_MAX;
                 
-                self.arView.fieldOfViewLandscape = fov;
+                self.arView.fovScaleLandscape = fov / self.arView.fieldOfViewLandscape;
             }
             
             [self updateFOV];
@@ -282,16 +221,13 @@
 
 - (IBAction)resetFOV:(id)sender {
     
-    NSString *device = [UIDeviceHardware platform];
-    NSDictionary *dict = self.fieldOfView[device];
-
     if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation)) {
 
-        self.arView.fieldOfViewPortrait = dict ? [dict[@"portrait"] floatValue] : 60.0;
+        self.arView.fovScalePortrait = 1.0;
 
     } else {
         
-        self.arView.fieldOfViewLandscape = dict ? [dict[@"landscape"] floatValue] : 40.0;
+        self.arView.fovScaleLandscape = 1.0;
     }
     
     [self updateFOV];
@@ -339,7 +275,7 @@
 
 - (void)updateFOV {
     
-    NSString *fov = UIInterfaceOrientationIsPortrait(self.interfaceOrientation) ? [NSNumberFormatter localizedStringFromNumber:@(self.arView.fieldOfViewPortrait) numberStyle:NSNumberFormatterDecimalStyle] : [NSNumberFormatter localizedStringFromNumber:@(self.arView.fieldOfViewLandscape) numberStyle:NSNumberFormatterDecimalStyle];
+    NSString *fov = UIInterfaceOrientationIsPortrait(self.interfaceOrientation) ? [NSNumberFormatter localizedStringFromNumber:@(self.arView.fieldOfViewPortrait * self.arView.fovScalePortrait) numberStyle:NSNumberFormatterDecimalStyle] : [NSNumberFormatter localizedStringFromNumber:@(self.arView.fieldOfViewLandscape * self.arView.fovScaleLandscape) numberStyle:NSNumberFormatterDecimalStyle];
     
     self.fovLabel.text = [NSString stringWithFormat:@"%@°", fov];
 }

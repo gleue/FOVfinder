@@ -29,14 +29,15 @@
 
 @interface FOVARView : UIView  <GLKViewDelegate>
 
-@property (strong, nonatomic) NSString *videoGravity;
-
-@property (assign, nonatomic) float fieldOfViewPortrait;
-@property (assign, nonatomic) float fieldOfViewLandscape;
-
 @property (strong, nonatomic) NSArray *shapes;
-
+@property (strong, nonatomic) NSString *videoGravity;
 @property (assign, nonatomic) UIInterfaceOrientation interfaceOrienation;
+
+@property (assign, nonatomic) CGFloat fovScalePortrait;
+@property (assign, nonatomic) CGFloat fovScaleLandscape;
+
+@property (readonly, nonatomic) CGFloat fieldOfViewPortrait;
+@property (readonly, nonatomic) CGFloat fieldOfViewLandscape;
 
 - (EAGLContext *)renderContext;
 
