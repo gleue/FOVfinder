@@ -116,6 +116,8 @@
 	[super viewWillAppear:animated];
 
 	[self.arView start];
+    
+    self.arView.interfaceOrienation = self.interfaceOrientation;
 }
 
 - (void)viewDidAppear:(BOOL)animated {

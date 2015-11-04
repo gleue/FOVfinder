@@ -210,6 +210,8 @@
     
 	[self startCameraPreview];
 	[self startDisplayLink];
+    
+    [self setNeedsLayout];
 }
 
 - (void)stop {
