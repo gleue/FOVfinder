@@ -169,34 +169,25 @@
 
     if (_fieldOfView == nil) {
     
-        _fieldOfView = @{ @"iPhone3,1": @{ @"portrait": @60.0, @"landscape": @40.0 }, /* iPhone 4: !!!Unknown!!! */
-                          @"iPhone3,3": @{ @"portrait": @60.0, @"landscape": @40.0 },
-                          @"iPhone4,1": @{ @"portrait": @60.0, @"landscape": @40.0 }, /* iPhone 4S: !!!Unknown!!! */
-                          @"iPhone5,1": @{ @"portrait": @55.0, @"landscape": @32.0 }, /* iPhone 5 & 5c: OK */
+        _fieldOfView = @{ @"iPhone5,1": @{ @"portrait": @55.0, @"landscape": @32.0 }, /* iPhone 5 & 5c */
                           @"iPhone5,2": @{ @"portrait": @55.0, @"landscape": @32.0 },
                           @"iPhone5,3": @{ @"portrait": @55.0, @"landscape": @32.0 },
                           @"iPhone5,4": @{ @"portrait": @55.0, @"landscape": @32.0 },
-                          @"iPhone6,1": @{ @"portrait": @60.0, @"landscape": @37.0 }, /* iPhone 5s: OK */
+                          @"iPhone6,1": @{ @"portrait": @60.0, @"landscape": @37.0 }, /* iPhone 5s */
                           @"iPhone6,2": @{ @"portrait": @60.0, @"landscape": @37.0 },
-                          @"iPod4,1":   @{ @"portrait": @60.0, @"landscape": @40.0 }, /* iPod 4G: !!!Unknown!!! */
-                          @"iPod5,1":   @{ @"portrait": @57.0, @"landscape": @35.0 }, /* iPod 5G: OK */
-                          @"iPad2,1":   @{ @"portrait": @44.0, @"landscape": @33.0 }, /* iPad 2: OK */
+                          @"iPod5,1":   @{ @"portrait": @54.33, @"landscape": @30.61 }, /* iPod 5G */
+                          @"iPad2,1":   @{ @"portrait": @44.0, @"landscape": @33.0 }, /* iPad 2 */
                           @"iPad2,2":   @{ @"portrait": @44.0, @"landscape": @33.0 },
                           @"iPad2,3":   @{ @"portrait": @44.0, @"landscape": @33.0 },
                           @"iPad2,4":   @{ @"portrait": @44.0, @"landscape": @33.0 },
-                          @"iPad2,5":   @{ @"portrait": @45.0, @"landscape": @34.0 }, /* iPad mini:OK */
+                          @"iPad2,5":   @{ @"portrait": @42.16, @"landscape": @31.62 }, /* iPad mini */
                           @"iPad2,6":   @{ @"portrait": @45.0, @"landscape": @34.0 },
                           @"iPad2,7":   @{ @"portrait": @45.0, @"landscape": @34.0 },
-                          @"iPad3,1":   @{ @"portrait": @35.0, @"landscape": @27.0 }, /* iPad 3: OK */
+                          @"iPad3,1":   @{ @"portrait": @35.0, @"landscape": @27.0 }, /* iPad 3 */
                           @"iPad3,2":   @{ @"portrait": @35.0, @"landscape": @27.0 },
                           @"iPad3,3":   @{ @"portrait": @35.0, @"landscape": @27.0 },
-                          @"iPad3,4":   @{ @"portrait": @35.0, @"landscape": @27.0 }, /* iPad 4: Guessed from iPad 3 */
-                          @"iPad3,5":   @{ @"portrait": @35.0, @"landscape": @27.0 },
-                          @"iPad3,6":   @{ @"portrait": @35.0, @"landscape": @27.0 },
-                          @"iPad4,1":   @{ @"portrait": @44.0, @"landscape": @34.0 }, /* iPad Air: OK */
+                          @"iPad4,1":   @{ @"portrait": @44.0, @"landscape": @34.0 }, /* iPad Air */
                           @"iPad4,2":   @{ @"portrait": @44.0, @"landscape": @34.0 },
-                          @"iPad4,4":   @{ @"portrait": @44.0, @"landscape": @34.0 }, /* iPad mini Retina: Guessed from iPad Air */
-                          @"iPad4,5":   @{ @"portrait": @44.0, @"landscape": @34.0 },
                           @"i386":      @{ @"portrait": @60.0, @"landscape": @40.0 }, /* Simulator */
                           @"x86_64":    @{ @"portrait": @60.0, @"landscape": @40.0 } };
     }
