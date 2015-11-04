@@ -60,7 +60,6 @@
 @property (strong, readonly) NSDictionary *fieldOfView;
 
 - (IBAction)handleTap:(id)sender;
-- (IBAction)handlePan:(id)sender;
 - (IBAction)handlePinch:(id)sender;
 
 - (IBAction)closeInfo:(UIStoryboardSegue *)segue;
@@ -98,11 +97,6 @@
     self.infoLabel.textColor = [UIColor blackColor];
 
     UIBarButtonItem *info = [[UIBarButtonItem alloc] initWithCustomView:self.infoLabel];
-
-    UISwitch *modeSwitch = [[UISwitch alloc] init];
-    
-    modeSwitch.onTintColor = [UIColor whiteColor];
-    
     UIBarButtonItem *flex = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
 
     self.toolbarItems = @[ flex, info, flex ];
@@ -151,7 +145,7 @@
 
 #pragma mark - Appearance
 
-- (NSUInteger)supportedInterfaceOrientations {
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
     
     return UIInterfaceOrientationMaskAll;
 }
@@ -216,29 +210,6 @@
     
     [self.navigationController setNavigationBarHidden:!self.navigationController.navigationBarHidden animated:YES];
     [self.navigationController setToolbarHidden:!self.navigationController.toolbarHidden animated:YES];
-}
-
-- (IBAction)handlePan:(id)sender {
-
-    static float startHeight;
-    static CGPoint startLocation;
-
-    UIPanGestureRecognizer *recognizer = sender;
-    
-    if (recognizer.state == UIGestureRecognizerStateBegan) {
-
-        startHeight = self.horizontalShape.height;
-        startLocation = [recognizer locationInView:self.arView];
-
-    } else if (recognizer.state == UIGestureRecognizerStateChanged) {
-        
-        CGPoint location = [recognizer locationInView:self.arView];
-        CGFloat delta = location.y - startLocation.y;
-        
-        self.horizontalShape.height = startHeight - roundf(0.1 * delta);
-        
-        [self updateInfo];
-    }
 }
 
 - (IBAction)handlePinch:(id)sender {
