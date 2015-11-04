@@ -318,6 +318,23 @@
     }
 }
 
+- (IBAction)resetFOV:(id)sender {
+    
+    NSString *device = [UIDeviceHardware platform];
+    NSDictionary *dict = self.fieldOfView[device];
+
+    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation)) {
+
+        self.arView.fieldOfViewPortrait = dict ? [dict[@"portrait"] floatValue] : 60.0;
+
+    } else {
+        
+        self.arView.fieldOfViewLandscape = dict ? [dict[@"landscape"] floatValue] : 40.0;
+    }
+    
+    [self updateFOV];
+}
+
 - (IBAction)closeInfo:(UIStoryboardSegue *)segue {
 }
 
