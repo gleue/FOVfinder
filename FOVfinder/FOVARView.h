@@ -25,11 +25,11 @@
 
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
-#import <AVFoundation/AVFoundation.h>
 
 @interface FOVARView : UIView  <GLKViewDelegate>
 
 @property (strong, nonatomic) NSArray *shapes;
+@property (strong, nonatomic) NSString *videoPreset;
 @property (strong, nonatomic) NSString *videoGravity;
 @property (assign, nonatomic) UIInterfaceOrientation interfaceOrienation;
 
@@ -43,5 +43,10 @@
 
 - (void)start;
 - (void)stop;
+
+- (NSString *)currentVideoPreset;
+
+- (CGFloat)effectiveFieldOfViewPortrait;
+- (CGFloat)effectiveFieldOfViewLandscape;
 
 @end

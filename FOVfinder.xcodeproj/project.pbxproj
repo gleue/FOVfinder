@@ -27,6 +27,7 @@
 		3D8907E5183A0576004EB2A7 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DD0E00817F40EE900B6DD70 /* UIKit.framework */; };
 		3D8907E6183A0576004EB2A7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DD0E00417F40EE900B6DD70 /* Foundation.framework */; };
 		3D8BA52A18B8AFC400808DFD /* UIDeviceHardware.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D8BA52918B8AFC400808DFD /* UIDeviceHardware.m */; };
+		3DE2E6721BEB552F007D6EF8 /* FOVFormatViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DE2E6711BEB552F007D6EF8 /* FOVFormatViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -62,6 +63,8 @@
 		3DD0E00617F40EE900B6DD70 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		3DD0E00817F40EE900B6DD70 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		3DD0E01217F40EE900B6DD70 /* FOVfinder-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FOVfinder-Prefix.pch"; sourceTree = "<group>"; };
+		3DE2E6701BEB552F007D6EF8 /* FOVFormatViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FOVFormatViewController.h; sourceTree = "<group>"; };
+		3DE2E6711BEB552F007D6EF8 /* FOVFormatViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FOVFormatViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +90,8 @@
 			children = (
 				3D35A81618151A0100BAB813 /* FOVARViewController.h */,
 				3D35A81718151A0100BAB813 /* FOVARViewController.m */,
+				3DE2E6701BEB552F007D6EF8 /* FOVFormatViewController.h */,
+				3DE2E6711BEB552F007D6EF8 /* FOVFormatViewController.m */,
 				3D4A121918E1C24E00E928F0 /* FOVGravityViewController.h */,
 				3D4A121A18E1C24E00E928F0 /* FOVGravityViewController.m */,
 				3D4A121618E1BF3000E928F0 /* FOVSettingsViewController.h */,
@@ -249,6 +254,7 @@
 				3D8907CA183A0576004EB2A7 /* FOVARShape.m in Sources */,
 				3D4A121818E1BF3000E928F0 /* FOVSettingsViewController.m in Sources */,
 				3D8907CD183A0576004EB2A7 /* FOVARViewController.m in Sources */,
+				3DE2E6721BEB552F007D6EF8 /* FOVFormatViewController.m in Sources */,
 				3D4A121B18E1C24E00E928F0 /* FOVGravityViewController.m in Sources */,
 				3D8907CE183A0576004EB2A7 /* FOVARView.m in Sources */,
 				3D0398F318B813FF00A8A74D /* FOVARRectShape.m in Sources */,

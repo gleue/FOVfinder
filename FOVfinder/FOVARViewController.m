@@ -37,7 +37,7 @@
 #define FOV_MAX 70.0
 
 #define SHAPE_HEIGHT -30.0
-#define SHAPE_DISTANCE 100.0
+#define SHAPE_DISTANCE 72.5 //100.0
 
 @interface FOVARViewController () {
     
@@ -51,6 +51,7 @@
 
 @property (weak, nonatomic) IBOutlet FOVARView *arView;
 @property (weak, nonatomic) IBOutlet UILabel *fovLabel;
+@property (weak, nonatomic) IBOutlet UILabel *focusLabel;
 
 @property (strong, nonatomic) UILabel *infoLabel;
 
@@ -73,7 +74,7 @@
 
 	[super viewDidLoad];
     
-    _pinchFactor = 10.0;
+    _pinchFactor = 100.0;
     _currentSize = CGSizeMake(21.0, 29.7);
 
     self.navigationItem.title = [UIDeviceHardware platformString];
@@ -127,6 +128,7 @@
         UINavigationController *navigation = segue.destinationViewController;
         FOVSettingsViewController *controller = (FOVSettingsViewController *)navigation.topViewController;
         
+        controller.videoFormat = self.arView.currentVideoPreset;
         controller.videoGravity = self.arView.videoGravity;
         
         controller.overlaySize = _currentSize;
@@ -173,8 +175,8 @@
             
         case UIGestureRecognizerStateBegan: {
             
-            startPortraitFOV = self.arView.fieldOfViewPortrait * self.arView.fovScalePortrait;
-            startLandscapeFOV = self.arView.fieldOfViewLandscape * self.arView.fovScaleLandscape;
+            startPortraitFOV = self.arView.effectiveFieldOfViewPortrait;
+            startLandscapeFOV = self.arView.effectiveFieldOfViewLandscape;
 
             break;
         }
@@ -240,6 +242,7 @@
     
     FOVSettingsViewController *controller = segue.sourceViewController;
     
+    self.arView.videoPreset = controller.videoFormat;
     self.arView.videoGravity = controller.videoGravity;
     
     [self createShapesOfSize:controller.overlaySize atDistance:controller.overlayDistance height:controller.overlayHeight];
@@ -275,7 +278,7 @@
 
 - (void)updateFOV {
     
-    NSString *fov = UIInterfaceOrientationIsPortrait(self.interfaceOrientation) ? [NSNumberFormatter localizedStringFromNumber:@(self.arView.fieldOfViewPortrait * self.arView.fovScalePortrait) numberStyle:NSNumberFormatterDecimalStyle] : [NSNumberFormatter localizedStringFromNumber:@(self.arView.fieldOfViewLandscape * self.arView.fovScaleLandscape) numberStyle:NSNumberFormatterDecimalStyle];
+    NSString *fov = UIInterfaceOrientationIsPortrait(self.interfaceOrientation) ? [NSNumberFormatter localizedStringFromNumber:@(self.arView.effectiveFieldOfViewPortrait) numberStyle:NSNumberFormatterDecimalStyle] : [NSNumberFormatter localizedStringFromNumber:@(self.arView.effectiveFieldOfViewLandscape) numberStyle:NSNumberFormatterDecimalStyle];
     
     self.fovLabel.text = [NSString stringWithFormat:@"%@°", fov];
 }

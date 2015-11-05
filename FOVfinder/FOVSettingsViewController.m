@@ -24,6 +24,7 @@
 //  THE SOFTWARE.
 
 #import "FOVSettingsViewController.h"
+#import "FOVFormatViewController.h"
 #import "FOVGravityViewController.h"
 
 @interface FOVSettingsViewController () {
@@ -31,6 +32,7 @@
     NSInteger _currentRow;
 }
 
+@property (weak, nonatomic) IBOutlet UITableViewCell *formatCell;
 @property (weak, nonatomic) IBOutlet UITableViewCell *gravityCell;
 @property (weak, nonatomic) IBOutlet UITableViewCell *distanceCell;
 @property (weak, nonatomic) IBOutlet UITableViewCell *heightCell;
@@ -46,7 +48,7 @@
 
 - (void)dealloc {
     
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:nil object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)viewDidLoad {
@@ -62,12 +64,19 @@
     
     [self updateCells];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(formatChanged:) name:FOVFormatViewControllerFormatChanged object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(gravityChanged:) name:FOVGravityViewControllerGravityChanged object:nil];
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     
-    if ([segue.identifier isEqualToString:@"OpenGravitySelection"]) {
+    if ([segue.identifier isEqualToString:@"OpenFormatSelection"]) {
+        
+        FOVFormatViewController *controller = segue.destinationViewController;
+
+        controller.videoFormat = self.videoFormat;
+
+    } else if ([segue.identifier isEqualToString:@"OpenGravitySelection"]) {
         
         FOVGravityViewController *controller = segue.destinationViewController;
         
@@ -143,7 +152,7 @@
     return 1;
 }
 
-static CGFloat distances[] = { 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0 };
+static CGFloat distances[] = { 50.0, 60.0, 72.5, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 170.0, 180.0, 190.0, 200.0 };
 static CGFloat heights[] = { 0.0, -10.0, -20.0, -30.0, -40.0, -50.0, -60.0, -70.0, -80.0, -90.0, -100.0, -110.0, -120.0, -130.0, -140.0, -150.0, -200.0 };
 static CGSize sizes[] = { { 10.0, 15.0 }, { 21.0, 29.7 }, { 100.0, 100.0 } };
 
@@ -253,6 +262,15 @@ static CGSize sizes[] = { { 10.0, 15.0 }, { 21.0, 29.7 }, { 100.0, 100.0 } };
 
 #pragma mark - Notification handlers
 
+- (void)formatChanged:(NSNotification *)notification {
+    
+    FOVFormatViewController *controller = notification.object;
+    
+    self.videoFormat = controller.videoFormat;
+    
+    [self updateFormatCell];
+}
+
 - (void)gravityChanged:(NSNotification *)notification {
 
     FOVGravityViewController *controller = notification.object;
@@ -266,10 +284,23 @@ static CGSize sizes[] = { { 10.0, 15.0 }, { 21.0, 29.7 }, { 100.0, 100.0 } };
 
 - (void)updateCells {
 
+    [self updateFormatCell];
     [self updateGravityCell];
     [self updateDistanceCell];
     [self updateHeightCell];
     [self updateSizeCell];
+}
+
+- (void)updateFormatCell {
+    
+    if (self.videoFormat.length > 0) {
+        
+        self.formatCell.detailTextLabel.text = [self.videoFormat stringByReplacingOccurrencesOfString:@"AVCaptureSessionPreset" withString:@""];
+        
+    } else {
+        
+        self.formatCell.detailTextLabel.text = NSLocalizedString(@"undefined", nil);
+    }
 }
 
 - (void)updateGravityCell {

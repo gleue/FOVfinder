@@ -26,6 +26,8 @@
 #import "FOVARView.h"
 #import "FOVARShape.h"
 
+#import <AVFoundation/AVFoundation.h>
+
 #pragma mark - Math utilities declaration
 
 #define DEGREES_TO_RADIANS (M_PI/180.0)
@@ -138,6 +140,7 @@
     self.renderView.frame = bounds;
 
     [self computeFOVfromCameraFormat];
+    [self updateProjectionMatrix];
 
     [super layoutSubviews];
 }
@@ -204,6 +207,21 @@
     [self updateProjectionMatrix];
 }
 
+- (NSString *)currentVideoPreset {
+    
+    return self.captureSession.sessionPreset;
+}
+
+- (CGFloat)effectiveFieldOfViewPortrait {
+
+    return self.fovScalePortrait * self.fieldOfViewPortrait;
+}
+
+- (CGFloat)effectiveFieldOfViewLandscape {
+    
+    return self.fovScaleLandscape * self.fieldOfViewLandscape;
+}
+
 #pragma mark - Methods
 
 - (void)start {
@@ -231,8 +249,6 @@
     
     if (camera) {
         
-        NSLog(@"%s bounds = %@", __PRETTY_FUNCTION__, NSStringFromCGRect(self.bounds));
-        
         CGFloat aspectRatio = self.bounds.size.width / self.bounds.size.height;
         
         if (aspectRatio > 1.0) aspectRatio = 1.0 / aspectRatio;
@@ -242,32 +258,58 @@
         CMFormatDescriptionRef description = camera.activeFormat.formatDescription;
         CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(description);
         
+        CGFloat aspectWidth = (CGFloat)dimensions.height / aspectRatio;
+        CGFloat aspectHeight = (CGFloat)dimensions.width * aspectRatio;
+        
         if ([self.videoGravity isEqualToString:AVLayerVideoGravityResizeAspectFill]) {
             
-            CGFloat aspectWidth = (CGFloat)dimensions.height / aspectRatio;
-            CGFloat aspectHeight = (CGFloat)dimensions.width * aspectRatio;
+            CGFloat aspectFOV;
             
             if (aspectWidth < dimensions.width) {
                 
-                CGFloat previewFOV = 2.0 * atan(aspectWidth / (CGFloat)dimensions.width * tan(0.5 * camera.activeFormat.videoFieldOfView * DEGREES_TO_RADIANS)) / DEGREES_TO_RADIANS;
+                aspectFOV = 2.0 * atan(aspectWidth / (CGFloat)dimensions.width * tan(0.5 * camera.activeFormat.videoFieldOfView * DEGREES_TO_RADIANS)) / DEGREES_TO_RADIANS;
                 
-                NSLog(@"Preview FOV: %g", previewFOV);
+            } else if (aspectHeight < dimensions.height) {
                 
-                if (dimensions.width > dimensions.height) {
-                    
-                    // Landscape camera format
-                    //
-                    // Portrait: vertical OpenGL FoV = horizontal Preview FoV
-                    // Landscape: vertical OpenGL FoV = horizontal Preview FoV * aspect ratio
-                    //
-                    _fieldOfViewPortrait = previewFOV;
-                    _fieldOfViewLandscape = previewFOV * aspectRatio;
-                    
-                    NSLog(@"Portrait FOV: %g", self.fieldOfViewPortrait);
-                    NSLog(@"Landscape FOV: %g", self.fieldOfViewLandscape);
-                }
+                aspectFOV = camera.activeFormat.videoFieldOfView;
+                
+            } else {
+                
+                aspectFOV = camera.activeFormat.videoFieldOfView;
             }
+
+            _fieldOfViewPortrait = aspectFOV;
+            _fieldOfViewLandscape = 2.0 * atan(tan(0.5 * aspectFOV * DEGREES_TO_RADIANS) * aspectRatio) / DEGREES_TO_RADIANS;
+            
+        } else if ([self.videoGravity isEqualToString:AVLayerVideoGravityResizeAspect]) {
+
+            CGFloat aspectFOV;
+
+            if (aspectHeight > dimensions.height) {
+                
+                // Left and right bars added (in portrait)
+                //
+                aspectFOV = camera.activeFormat.videoFieldOfView;
+
+            } else if (aspectWidth > dimensions.width) {
+                
+                // Top and bottom bars added (in portrait)
+                //
+                aspectFOV = 2.0 * atan(aspectWidth / (CGFloat)dimensions.width * tan(0.5 * camera.activeFormat.videoFieldOfView * DEGREES_TO_RADIANS)) / DEGREES_TO_RADIANS;
+
+            } else {
+                
+                // Matching aspect ratio -- no bars added
+                //
+                aspectFOV = camera.activeFormat.videoFieldOfView;
+            }
+
+            _fieldOfViewPortrait = aspectFOV;
+            _fieldOfViewLandscape = 2.0 * atan(tan(0.5 * aspectFOV * DEGREES_TO_RADIANS) * aspectRatio) / DEGREES_TO_RADIANS;
         }
+        
+        NSLog(@"Portrait FOV: %g", self.fieldOfViewPortrait);
+        NSLog(@"Landscape FOV: %g", self.fieldOfViewLandscape);
     }
 }
 
@@ -275,7 +317,7 @@
     
     // Initialize camera & projection matrix
     //
-    CGFloat fovy = UIInterfaceOrientationIsPortrait(self.interfaceOrienation) ? self.fieldOfViewPortrait * self.fovScalePortrait : self.fieldOfViewLandscape * self.fovScaleLandscape;
+    CGFloat fovy = UIInterfaceOrientationIsPortrait(self.interfaceOrienation) ? self.effectiveFieldOfViewPortrait : self.effectiveFieldOfViewLandscape;
     CGFloat aspect = self.bounds.size.width / self.bounds.size.height;
     
     _projectionMatrix = GLKMatrix4MakePerspective(GLKMathDegreesToRadians(fovy), aspect, 0.1f, 1000.0f);
@@ -289,15 +331,20 @@
 
 //    if ([camera lockForConfiguration:NULL]) {
 //
-//        // Lock auto focus to max distance
+//        // Lock auto focus to min distance
 //        //
-//        [camera setFocusModeLockedWithLensPosition:1.0 completionHandler:nil];
+//        [camera setFocusModeLockedWithLensPosition:0.0 completionHandler:nil];
 //        [camera unlockForConfiguration];
 //    }
 
 	if (camera == nil) return;
 	
 	self.captureSession = [[AVCaptureSession alloc] init];
+    
+    if (self.videoPreset && [self.captureSession canSetSessionPreset:self.videoPreset]) {
+        
+        self.captureSession.sessionPreset = self.videoPreset;
+    }
     
 	AVCaptureDeviceInput *newVideoInput = [[AVCaptureDeviceInput alloc] initWithDevice:camera error:nil];
 

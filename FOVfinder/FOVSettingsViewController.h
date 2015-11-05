@@ -27,6 +27,7 @@
 
 @interface FOVSettingsViewController : UITableViewController <UIPickerViewDataSource, UIPickerViewDelegate, UITextFieldDelegate>
 
+@property (strong, nonatomic) NSString *videoFormat;
 @property (strong, nonatomic) NSString *videoGravity;
 
 @property (assign, nonatomic) CGSize overlaySize;
