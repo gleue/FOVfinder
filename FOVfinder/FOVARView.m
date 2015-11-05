@@ -28,6 +28,8 @@
 
 #import <AVFoundation/AVFoundation.h>
 
+static char FOVARViewKVOContext;
+
 #pragma mark - Math utilities declaration
 
 #define DEGREES_TO_RADIANS (M_PI/180.0)
@@ -43,6 +45,7 @@
 @property (strong, nonatomic) EAGLContext *renderContext;
 
 @property (strong, nonatomic) UIView *captureView;
+@property (strong, nonatomic) AVCaptureDevice *captureDevice;
 @property (strong, nonatomic) AVCaptureSession *captureSession;
 @property (strong, nonatomic) AVCaptureVideoPreviewLayer *captureLayer;
 
@@ -244,18 +247,17 @@
 
 - (void)computeFOVfromCameraFormat {
     
-    AVCaptureDeviceInput *input = self.captureSession.inputs.firstObject;
-    AVCaptureDevice *camera = input.device;
-    
-    if (camera) {
+    if (self.captureDevice) {
         
         CGFloat aspectRatio = self.bounds.size.width / self.bounds.size.height;
         
         if (aspectRatio > 1.0) aspectRatio = 1.0 / aspectRatio;
         
-        NSLog(@"Active: %@", camera.activeFormat);
+        AVCaptureDeviceFormat *activeFormat = self.captureDevice.activeFormat;
+
+        NSLog(@"Active: %@", self.captureDevice.activeFormat);
         
-        CMFormatDescriptionRef description = camera.activeFormat.formatDescription;
+        CMFormatDescriptionRef description = activeFormat.formatDescription;
         CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(description);
         
         CGFloat aspectWidth = (CGFloat)dimensions.height / aspectRatio;
@@ -267,15 +269,15 @@
             
             if (aspectWidth < dimensions.width) {
                 
-                aspectFOV = 2.0 * atan(aspectWidth / (CGFloat)dimensions.width * tan(0.5 * camera.activeFormat.videoFieldOfView * DEGREES_TO_RADIANS)) / DEGREES_TO_RADIANS;
+                aspectFOV = 2.0 * atan(aspectWidth / (CGFloat)dimensions.width * tan(0.5 * activeFormat.videoFieldOfView * DEGREES_TO_RADIANS)) / DEGREES_TO_RADIANS;
                 
             } else if (aspectHeight < dimensions.height) {
                 
-                aspectFOV = camera.activeFormat.videoFieldOfView;
+                aspectFOV = activeFormat.videoFieldOfView;
                 
             } else {
                 
-                aspectFOV = camera.activeFormat.videoFieldOfView;
+                aspectFOV = activeFormat.videoFieldOfView;
             }
 
             _fieldOfViewPortrait = aspectFOV;
@@ -289,19 +291,19 @@
                 
                 // Left and right bars added (in portrait)
                 //
-                aspectFOV = camera.activeFormat.videoFieldOfView;
+                aspectFOV = activeFormat.videoFieldOfView;
 
             } else if (aspectWidth > dimensions.width) {
                 
                 // Top and bottom bars added (in portrait)
                 //
-                aspectFOV = 2.0 * atan(aspectWidth / (CGFloat)dimensions.width * tan(0.5 * camera.activeFormat.videoFieldOfView * DEGREES_TO_RADIANS)) / DEGREES_TO_RADIANS;
+                aspectFOV = 2.0 * atan(aspectWidth / (CGFloat)dimensions.width * tan(0.5 * activeFormat.videoFieldOfView * DEGREES_TO_RADIANS)) / DEGREES_TO_RADIANS;
 
             } else {
                 
                 // Matching aspect ratio -- no bars added
                 //
-                aspectFOV = camera.activeFormat.videoFieldOfView;
+                aspectFOV = activeFormat.videoFieldOfView;
             }
 
             _fieldOfViewPortrait = aspectFOV;
@@ -339,6 +341,12 @@
 
 	if (camera == nil) return;
 	
+    self.captureDevice = camera;
+
+    [self.captureDevice addObserver:self forKeyPath:@"focusMode" options:NSKeyValueObservingOptionInitial context:&FOVARViewKVOContext];
+    [self.captureDevice addObserver:self forKeyPath:@"lensPosition" options:NSKeyValueObservingOptionInitial context:&FOVARViewKVOContext];
+    [self.captureDevice addObserver:self forKeyPath:@"adjustingFocus" options:NSKeyValueObservingOptionInitial|NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:&FOVARViewKVOContext];
+
 	self.captureSession = [[AVCaptureSession alloc] init];
     
     if (self.videoPreset && [self.captureSession canSetSessionPreset:self.videoPreset]) {
@@ -346,7 +354,7 @@
         self.captureSession.sessionPreset = self.videoPreset;
     }
     
-	AVCaptureDeviceInput *newVideoInput = [[AVCaptureDeviceInput alloc] initWithDevice:camera error:nil];
+	AVCaptureDeviceInput *newVideoInput = [[AVCaptureDeviceInput alloc] initWithDevice:self.captureDevice error:nil];
 
 	[self.captureSession addInput:newVideoInput];
 	
@@ -370,10 +378,16 @@
 - (void)stopCameraPreview {
 
 	[self.captureSession stopRunning];
-	[self.captureLayer removeFromSuperlayer];
+    [self.captureLayer removeFromSuperlayer];
 
-	self.captureSession = nil;
-	self.captureLayer = nil;
+    self.captureLayer = nil;
+    self.captureSession = nil;
+
+    [self.captureDevice removeObserver:self forKeyPath:@"adjustingFocus"];
+    [self.captureDevice removeObserver:self forKeyPath:@"lensPosition"];
+    [self.captureDevice removeObserver:self forKeyPath:@"focusMode"];
+
+    self.captureDevice = nil;
 }
 
 #pragma mark - Redraw management
@@ -421,6 +435,54 @@
 	[self.displayLink invalidate];
 
 	self.displayLink = nil;
+}
+
+#pragma mark - Key-value Observing
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *,id> *)change context:(void *)context {
+
+    if (context == &FOVARViewKVOContext) {
+
+        if ([keyPath isEqualToString:@"focusMode"]) {
+            
+            if ([self.delegate respondsToSelector:@selector(arView:didChangeFocusMode:)]) {
+                
+                [self.delegate arView:self didChangeFocusMode:self.captureDevice.focusMode];
+            }
+            
+            return;
+            
+        } else if ([keyPath isEqualToString:@"lensPosition"]) {
+            
+            if ([self.delegate respondsToSelector:@selector(arView:didChangeLensPosition:)]) {
+                
+                [self.delegate arView:self didChangeLensPosition:self.captureDevice.lensPosition];
+            }
+            
+            return;
+            
+        } else if ([keyPath isEqualToString:@"adjustingFocus"]) {
+            
+            BOOL oldAdjust = [change[NSKeyValueChangeOldKey] boolValue];
+            BOOL newAdjust = [change[NSKeyValueChangeNewKey] boolValue];
+
+            if (!oldAdjust && newAdjust && [self.delegate respondsToSelector:@selector(arViewDidStartAdjustingFocus:)]) {
+                
+                [self.delegate arViewDidStartAdjustingFocus:self];
+
+            } else if (oldAdjust && !newAdjust && [self.delegate respondsToSelector:@selector(arViewDidStopAdjustingFocus:)]) {
+                
+                [self.delegate arViewDidStopAdjustingFocus:self];
+            }
+
+            return;
+        }
+    }
+    
+    if ([super respondsToSelector:@selector(observeValueForKeyPath:ofObject:change:context:)]) {
+        
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
 }
 
 @end

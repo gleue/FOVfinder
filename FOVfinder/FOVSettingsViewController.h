@@ -34,4 +34,7 @@
 @property (assign, nonatomic) CGFloat overlayHeight;
 @property (assign, nonatomic) CGFloat overlayDistance;
 
+@property (assign, nonatomic, getter=isLensAdjustmentEnabled) BOOL lensAdjustmentEnabled;
+@property (assign, nonatomic) CGFloat lensAdjustmentFactor;
+
 @end

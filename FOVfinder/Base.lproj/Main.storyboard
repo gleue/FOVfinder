@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9049"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
         <!--Navigation Controller-->
@@ -59,7 +60,7 @@
                                         <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I3F-5f-Uzk">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I3F-5f-Uzk">
                                         <rect key="frame" x="270" y="495" width="42" height="21"/>
                                         <animations/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -108,7 +109,7 @@
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="lightContent"/>
                     <connections>
                         <outlet property="arView" destination="UAO-iE-Qyg" id="2jt-Ns-dyg"/>
-                        <outlet property="focusLabel" destination="I3F-5f-Uzk" id="YUt-fD-d0B"/>
+                        <outlet property="focusLabel" destination="I3F-5f-Uzk" id="U9j-Q8-cHB"/>
                         <outlet property="fovLabel" destination="GWD-y6-EWA" id="Wp5-KJ-k8T"/>
                     </connections>
                 </viewController>
@@ -307,6 +308,74 @@
                                     </tableViewCell>
                                 </cells>
                             </tableViewSection>
+                            <tableViewSection headerTitle="Focus" id="CnZ-IQ-HeK">
+                                <cells>
+                                    <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" id="gNq-06-IwR">
+                                        <rect key="frame" x="0.0" y="436" width="320" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="gNq-06-IwR" id="BfN-W7-IcA">
+                                            <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Adjust for Lens Position" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WJO-Cc-Kuj">
+                                                    <rect key="frame" x="15" y="11" width="180" height="21"/>
+                                                    <animations/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Sad-Ry-Ik4">
+                                                    <rect key="frame" x="256" y="6" width="51" height="31"/>
+                                                    <animations/>
+                                                    <connections>
+                                                        <action selector="toggleLensAdjustment:" destination="6UU-q8-Zmp" eventType="valueChanged" id="1e7-ce-aEO"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                            <animations/>
+                                            <constraints>
+                                                <constraint firstItem="Sad-Ry-Ik4" firstAttribute="trailing" secondItem="BfN-W7-IcA" secondAttribute="trailingMargin" constant="-7" id="9MV-FY-Zck"/>
+                                                <constraint firstItem="Sad-Ry-Ik4" firstAttribute="centerY" secondItem="BfN-W7-IcA" secondAttribute="centerY" id="DSH-3K-uLX"/>
+                                                <constraint firstItem="WJO-Cc-Kuj" firstAttribute="leading" secondItem="BfN-W7-IcA" secondAttribute="leadingMargin" constant="7" id="J2n-i7-94M"/>
+                                                <constraint firstItem="WJO-Cc-Kuj" firstAttribute="centerY" secondItem="BfN-W7-IcA" secondAttribute="centerY" id="OfQ-UU-bSU"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <animations/>
+                                    </tableViewCell>
+                                    <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" id="hGd-de-oK7">
+                                        <rect key="frame" x="0.0" y="480" width="320" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="hGd-de-oK7" id="PKY-7k-q4n">
+                                            <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Amount: " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hT0-Dc-Lh2">
+                                                    <rect key="frame" x="15" y="11" width="70" height="21"/>
+                                                    <animations/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" maximumValue="100" translatesAutoresizingMaskIntoConstraints="NO" id="urJ-uf-d77">
+                                                    <rect key="frame" x="211" y="7" width="94" height="29"/>
+                                                    <animations/>
+                                                    <connections>
+                                                        <action selector="lensAdjustmentChanged:" destination="6UU-q8-Zmp" eventType="valueChanged" id="nDM-12-6bo"/>
+                                                    </connections>
+                                                </stepper>
+                                            </subviews>
+                                            <animations/>
+                                            <constraints>
+                                                <constraint firstItem="urJ-uf-d77" firstAttribute="centerY" secondItem="PKY-7k-q4n" secondAttribute="centerY" id="3Ap-l4-jgp"/>
+                                                <constraint firstItem="urJ-uf-d77" firstAttribute="trailing" secondItem="PKY-7k-q4n" secondAttribute="trailingMargin" constant="-7" id="ZCw-qK-X7Z"/>
+                                                <constraint firstItem="hT0-Dc-Lh2" firstAttribute="centerY" secondItem="PKY-7k-q4n" secondAttribute="centerY" id="fsi-CQ-yiv"/>
+                                                <constraint firstItem="hT0-Dc-Lh2" firstAttribute="leading" secondItem="PKY-7k-q4n" secondAttribute="leadingMargin" constant="7" id="gPd-9m-e38"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <animations/>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
                         </sections>
                         <connections>
                             <outlet property="dataSource" destination="6UU-q8-Zmp" id="JNr-Ro-Exv"/>
@@ -325,6 +394,9 @@
                         <outlet property="formatCell" destination="HVq-ve-VLV" id="h9l-i4-wim"/>
                         <outlet property="gravityCell" destination="9Si-VW-PrQ" id="qm0-bP-EGh"/>
                         <outlet property="heightCell" destination="NmL-Wr-7KI" id="MVI-by-0Va"/>
+                        <outlet property="lensAdjustLabel" destination="hT0-Dc-Lh2" id="EH7-cG-EHF"/>
+                        <outlet property="lensAdjustStepper" destination="urJ-uf-d77" id="E7z-yQ-Scy"/>
+                        <outlet property="lensAdjustSwitch" destination="Sad-Ry-Ik4" id="FT5-4o-EhF"/>
                         <outlet property="sizeCell" destination="WqP-nN-qnk" id="Qya-nm-QoE"/>
                     </connections>
                 </tableViewController>

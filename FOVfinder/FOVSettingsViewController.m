@@ -38,6 +38,10 @@
 @property (weak, nonatomic) IBOutlet UITableViewCell *heightCell;
 @property (weak, nonatomic) IBOutlet UITableViewCell *sizeCell;
 
+@property (weak, nonatomic) IBOutlet UILabel *lensAdjustLabel;
+@property (weak, nonatomic) IBOutlet UISwitch *lensAdjustSwitch;
+@property (weak, nonatomic) IBOutlet UIStepper *lensAdjustStepper;
+
 @property (weak, nonatomic) UIPickerView *distancePicker;
 @property (weak, nonatomic) UIPickerView *heightPicker;
 @property (weak, nonatomic) UIPickerView *sizePicker;
@@ -82,6 +86,22 @@
         
         controller.videoGravity = self.videoGravity;
     }
+}
+
+#pragma mark - Actions
+
+- (IBAction)toggleLensAdjustment:(id)sender {
+
+    self.lensAdjustmentEnabled = self.lensAdjustSwitch.on;
+
+    [self updateLensCells];
+}
+
+- (IBAction)lensAdjustmentChanged:(id)sender {
+    
+    self.lensAdjustmentFactor = self.lensAdjustStepper.value / 100.0;
+    
+    [self updateLensCells];
 }
 
 #pragma mark - Table view delegate
@@ -289,6 +309,7 @@ static CGSize sizes[] = { { 10.0, 15.0 }, { 21.0, 29.7 }, { 100.0, 100.0 } };
     [self updateDistanceCell];
     [self updateHeightCell];
     [self updateSizeCell];
+    [self updateLensCells];
 }
 
 - (void)updateFormatCell {
@@ -335,6 +356,23 @@ static CGSize sizes[] = { { 10.0, 15.0 }, { 21.0, 29.7 }, { 100.0, 100.0 } };
     NSString *height = [NSNumberFormatter localizedStringFromNumber:@(self.overlaySize.height) numberStyle:NSNumberFormatterDecimalStyle];
 
     self.sizeCell.detailTextLabel.text = [NSString stringWithFormat:@"%@cm x %@cm", width, height];
+}
+
+- (void)updateLensCells {
+
+    if (self.isLensAdjustmentEnabled) {
+        
+        self.lensAdjustSwitch.on = YES;
+        self.lensAdjustStepper.enabled = YES;
+        self.lensAdjustStepper.value = self.lensAdjustmentFactor * 100.0;
+        self.lensAdjustLabel.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Amount", nil), [NSNumberFormatter localizedStringFromNumber:@(self.lensAdjustmentFactor) numberStyle:NSNumberFormatterPercentStyle]];
+
+    } else {
+        
+        self.lensAdjustSwitch.on = NO;
+        self.lensAdjustStepper.enabled = NO;
+        self.lensAdjustLabel.text = [NSString stringWithFormat:@"%@:", NSLocalizedString(@"Amount", nil)];
+    }
 }
 
 @end

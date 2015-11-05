@@ -39,14 +39,14 @@
 #define SHAPE_HEIGHT -30.0
 #define SHAPE_DISTANCE 72.5 //100.0
 
-@interface FOVARViewController () {
+@interface FOVARViewController () <FOVARViewDelegate> {
     
     CGSize _currentSize;
 
     float _pinchFactor;
-
-    float _targetFOVPortrait;
-    float _targetFOVLandscape;
+    
+    BOOL _isFocusing;
+    CGFloat _lensPosition;
 }
 
 @property (weak, nonatomic) IBOutlet FOVARView *arView;
@@ -58,10 +58,12 @@
 @property (strong, nonatomic) FOVARRectShape *verticalShape;
 @property (strong, nonatomic) FOVARPlaneShape *horizontalShape;
 
+@property (assign, nonatomic, getter=isLensAdjustmentEnabled) BOOL lensAdjustmentEnabled;
+@property (assign, nonatomic) CGFloat lensAdjustmentFactor;
+
 - (IBAction)handleTap:(id)sender;
 - (IBAction)handlePinch:(id)sender;
 
-- (IBAction)closeInfo:(UIStoryboardSegue *)segue;
 - (IBAction)closeSettings:(UIStoryboardSegue *)segue;
 
 @end
@@ -77,7 +79,12 @@
     _pinchFactor = 100.0;
     _currentSize = CGSizeMake(21.0, 29.7);
 
+    self.lensAdjustmentEnabled = YES;
+    self.lensAdjustmentFactor = 0.05;
+
     self.navigationItem.title = [UIDeviceHardware platformString];
+    
+    self.arView.delegate = self;
 
     [self createShapesOfSize:_currentSize atDistance:SHAPE_DISTANCE height:SHAPE_HEIGHT];
 
@@ -134,6 +141,9 @@
         controller.overlaySize = _currentSize;
         controller.overlayHeight = self.horizontalShape.height;
         controller.overlayDistance = self.horizontalShape.distance;
+        
+        controller.lensAdjustmentEnabled = self.lensAdjustmentEnabled;
+        controller.lensAdjustmentFactor = self.lensAdjustmentFactor;
     }
 }
 
@@ -192,6 +202,7 @@
                 if (fov < FOV_MIN) fov = FOV_MIN; else if (fov > FOV_MAX) fov = FOV_MAX;
 
                 self.arView.fovScalePortrait = fov / self.arView.fieldOfViewPortrait;
+                self.lensAdjustmentEnabled = NO;
                 
             } else {
                 
@@ -202,6 +213,7 @@
                 if (fov < FOV_MIN) fov = FOV_MIN; else if (fov > FOV_MAX) fov = FOV_MAX;
                 
                 self.arView.fovScaleLandscape = fov / self.arView.fieldOfViewLandscape;
+                self.lensAdjustmentEnabled = NO;
             }
             
             [self updateFOV];
@@ -235,9 +247,6 @@
     [self updateFOV];
 }
 
-- (IBAction)closeInfo:(UIStoryboardSegue *)segue {
-}
-
 - (IBAction)closeSettings:(UIStoryboardSegue *)segue {
     
     FOVSettingsViewController *controller = segue.sourceViewController;
@@ -250,6 +259,42 @@
     _currentSize = controller.overlaySize;
     
     [self updateInfo];
+    
+    self.lensAdjustmentEnabled = controller.isLensAdjustmentEnabled;
+    self.lensAdjustmentFactor = controller.lensAdjustmentFactor;
+    
+    if (self.isLensAdjustmentEnabled) {
+        
+        [self updateLensAdjustment];
+        
+    } else {
+        
+        [self resetFOV:nil];
+    }
+}
+
+#pragma mark - FOVARViewDelegate protocol
+
+- (void)arViewDidStartAdjustingFocus:(FOVARView *)view {
+    
+    _isFocusing = YES;
+    
+    [self updateLens];
+}
+
+- (void)arViewDidStopAdjustingFocus:(FOVARView *)view {
+
+    _isFocusing = NO;
+    
+    [self updateLens];
+}
+
+- (void)arView:(FOVARView *)view didChangeLensPosition:(CGFloat)position {
+
+    _lensPosition = position;
+    
+    [self updateLens];
+    [self updateLensAdjustment];
 }
 
 #pragma mark - Helpers
@@ -266,6 +311,13 @@
     self.arView.shapes = @[ self.verticalShape, self.horizontalShape ];
 }
 
+- (void)updateFOV {
+    
+    NSString *fov = UIInterfaceOrientationIsPortrait(self.interfaceOrientation) ? [NSNumberFormatter localizedStringFromNumber:@(self.arView.effectiveFieldOfViewPortrait) numberStyle:NSNumberFormatterDecimalStyle] : [NSNumberFormatter localizedStringFromNumber:@(self.arView.effectiveFieldOfViewLandscape) numberStyle:NSNumberFormatterDecimalStyle];
+    
+    self.fovLabel.text = [NSString stringWithFormat:@"%@°", fov];
+}
+
 - (void)updateInfo {
     
     NSString *w = [NSNumberFormatter localizedStringFromNumber:@(_currentSize.width) numberStyle:NSNumberFormatterDecimalStyle];
@@ -276,11 +328,24 @@
     self.infoLabel.text = [NSString stringWithFormat:@"%@cm x %@cm @ %@cm / %@cm", w, h, dist, height];
 }
 
-- (void)updateFOV {
+- (void)updateLens {
     
-    NSString *fov = UIInterfaceOrientationIsPortrait(self.interfaceOrientation) ? [NSNumberFormatter localizedStringFromNumber:@(self.arView.effectiveFieldOfViewPortrait) numberStyle:NSNumberFormatterDecimalStyle] : [NSNumberFormatter localizedStringFromNumber:@(self.arView.effectiveFieldOfViewLandscape) numberStyle:NSNumberFormatterDecimalStyle];
+    NSString *text = _isFocusing ? @"⌾ " : @"";
+    NSString *lens = [NSNumberFormatter localizedStringFromNumber:@(_lensPosition) numberStyle:NSNumberFormatterDecimalStyle];
+
+    self.focusLabel.text = [text stringByAppendingString:lens];
+}
+
+- (void)updateLensAdjustment {
     
-    self.fovLabel.text = [NSString stringWithFormat:@"%@°", fov];
+    if (self.isLensAdjustmentEnabled) {
+        
+        CGFloat scale = 1.0 + _lensPosition * self.lensAdjustmentFactor;
+        
+        self.arView.fovScalePortrait = self.arView.fovScaleLandscape = scale;
+    }
+    
+    [self updateFOV];
 }
 
 @end

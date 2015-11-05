@@ -26,7 +26,25 @@
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
 
+#import <AVFoundation/AVFoundation.h>
+
+@class FOVARView;
+
+@protocol FOVARViewDelegate <NSObject>
+
+@optional
+
+- (void)arView:(FOVARView *)view didChangeFocusMode:(AVCaptureFocusMode)mode;
+- (void)arView:(FOVARView *)view didChangeLensPosition:(CGFloat)position;
+
+- (void)arViewDidStartAdjustingFocus:(FOVARView *)view;
+- (void)arViewDidStopAdjustingFocus:(FOVARView *)view;
+
+@end
+
 @interface FOVARView : UIView  <GLKViewDelegate>
+
+@property (weak, nonatomic) id <FOVARViewDelegate> delegate;
 
 @property (strong, nonatomic) NSArray *shapes;
 @property (strong, nonatomic) NSString *videoPreset;
