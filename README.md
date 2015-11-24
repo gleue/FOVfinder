@@ -15,23 +15,25 @@ Usage
 Build and run `FOVfinder.xcodeproj` on an iDevice. The app will run on the simulator, too,
 but will give you no camera image.
 
-On the main view use a pinch gesture to adjust the field of view angle so that the white
-overlay frames match the reference objects in the camera preview. Currently the angle may
-be changed in 1 degree steps, only. The field of view may be determined for landscape and
-portrait orientation.
+On the main view use a pinch gesture to adjust the field of view so that the white
+overlay frames match the reference objects in the camera preview. The field of view
+may be determined for landscape and portrait orientation.
+
+Use two-finger pan up and down to adjust the zoom factor, if available in the currently
+active video format.
 
 A tap on the camera preview toggles the navigation and tool bars in the main view.
 
-Use the Settings view to adjust video gravity of the <code>AVCaptureVideoPreviewLayer</code>
-as well as size and offsets of the overlay frames. All measures are given in centimeters, but
-the underlying projection geometry is basically unit-less.
+Use the Settings view to adjust video format and gravity as well as size and offsets
+of the overlay frames. All measures are given in centimeters, but the underlying
+projection geometry is basically unit-less.
 
 Requirements
 ============
 
 * ARC
-* iOS 7
-* Xcode 5
+* iOS >= 7.0
+* Xcode >= 5
 * iDevice, since Simulator does not have a camera
 
 License
@@ -39,7 +41,7 @@ License
 
 FOVfinder is available under the MIT License (MIT)
 
-Copyright (c) 2014 Tim Gleue (http://gleue-interactive.com)
+Copyright (c) 2015 Tim Gleue (http://gleue-interactive.com)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
