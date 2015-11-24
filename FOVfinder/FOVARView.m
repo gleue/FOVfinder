@@ -215,6 +215,29 @@ static char FOVARViewKVOContext;
     return self.captureSession.sessionPreset;
 }
 
+- (CGFloat)maxVideoZoom {
+    
+    return self.captureDevice.activeFormat.videoMaxZoomFactor;
+}
+
+- (CGFloat)currentVideoZoom {
+    
+    return self.captureDevice.videoZoomFactor;
+}
+
+- (void)setCurrentVideoZoom:(CGFloat)zoom {
+
+    if ([self.captureDevice lockForConfiguration:nil]) {
+
+        self.captureDevice.videoZoomFactor = MAX(1.0, MIN(zoom, self.captureDevice.activeFormat.videoMaxZoomFactor));
+
+        [self.captureDevice unlockForConfiguration];
+        
+        [self computeFOVfromCameraFormat];
+        [self updateProjectionMatrix];
+    }
+}
+
 - (CGFloat)effectiveFieldOfViewPortrait {
 
     return self.fovScalePortrait * self.fieldOfViewPortrait;
@@ -260,6 +283,8 @@ static char FOVARViewKVOContext;
         CMFormatDescriptionRef description = activeFormat.formatDescription;
         CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(description);
         
+        CGFloat activeFOV = 2.0 * atan(tan(0.5 * activeFormat.videoFieldOfView * DEGREES_TO_RADIANS) / self.captureDevice.videoZoomFactor) / DEGREES_TO_RADIANS;
+        
         CGFloat aspectWidth = (CGFloat)dimensions.height / aspectRatio;
         CGFloat aspectHeight = (CGFloat)dimensions.width * aspectRatio;
         
@@ -269,15 +294,15 @@ static char FOVARViewKVOContext;
             
             if (aspectWidth < dimensions.width) {
                 
-                aspectFOV = 2.0 * atan(aspectWidth / (CGFloat)dimensions.width * tan(0.5 * activeFormat.videoFieldOfView * DEGREES_TO_RADIANS)) / DEGREES_TO_RADIANS;
+                aspectFOV = 2.0 * atan(aspectWidth / (CGFloat)dimensions.width * tan(0.5 * activeFOV * DEGREES_TO_RADIANS)) / DEGREES_TO_RADIANS;
                 
             } else if (aspectHeight < dimensions.height) {
                 
-                aspectFOV = activeFormat.videoFieldOfView;
+                aspectFOV = activeFOV;
                 
             } else {
                 
-                aspectFOV = activeFormat.videoFieldOfView;
+                aspectFOV = activeFOV;
             }
 
             _fieldOfViewPortrait = aspectFOV;
@@ -291,19 +316,19 @@ static char FOVARViewKVOContext;
                 
                 // Left and right bars added (in portrait)
                 //
-                aspectFOV = activeFormat.videoFieldOfView;
+                aspectFOV = activeFOV;
 
             } else if (aspectWidth > dimensions.width) {
                 
                 // Top and bottom bars added (in portrait)
                 //
-                aspectFOV = 2.0 * atan(aspectWidth / (CGFloat)dimensions.width * tan(0.5 * activeFormat.videoFieldOfView * DEGREES_TO_RADIANS)) / DEGREES_TO_RADIANS;
+                aspectFOV = 2.0 * atan(aspectWidth / (CGFloat)dimensions.width * tan(0.5 * activeFOV * DEGREES_TO_RADIANS)) / DEGREES_TO_RADIANS;
 
             } else {
                 
                 // Matching aspect ratio -- no bars added
                 //
-                aspectFOV = activeFormat.videoFieldOfView;
+                aspectFOV = activeFOV;
             }
 
             _fieldOfViewPortrait = aspectFOV;

@@ -64,6 +64,10 @@
 
 - (NSString *)currentVideoPreset;
 
+- (CGFloat)maxVideoZoom;
+- (CGFloat)currentVideoZoom;
+- (void)setCurrentVideoZoom:(CGFloat)zoom;
+
 - (CGFloat)effectiveFieldOfViewPortrait;
 - (CGFloat)effectiveFieldOfViewLandscape;
 

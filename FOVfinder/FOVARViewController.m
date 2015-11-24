@@ -51,7 +51,11 @@
 
 @property (weak, nonatomic) IBOutlet FOVARView *arView;
 @property (weak, nonatomic) IBOutlet UILabel *fovLabel;
+@property (weak, nonatomic) IBOutlet UILabel *zoomLabel;
 @property (weak, nonatomic) IBOutlet UILabel *focusLabel;
+
+@property (strong, nonatomic) IBOutlet UIPanGestureRecognizer *panRecognizer;
+@property (strong, nonatomic) IBOutlet UIPinchGestureRecognizer *pinchRecognizer;
 
 @property (strong, nonatomic) UILabel *infoLabel;
 
@@ -60,11 +64,6 @@
 
 @property (assign, nonatomic, getter=isLensAdjustmentEnabled) BOOL lensAdjustmentEnabled;
 @property (assign, nonatomic) CGFloat lensAdjustmentFactor;
-
-- (IBAction)handleTap:(id)sender;
-- (IBAction)handlePinch:(id)sender;
-
-- (IBAction)closeSettings:(UIStoryboardSegue *)segue;
 
 @end
 
@@ -108,8 +107,6 @@
 	[self.arView start];
     
     self.arView.interfaceOrienation = self.interfaceOrientation;
-    
-    [self updateFOV];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -119,6 +116,7 @@
     self.arView.interfaceOrienation = self.interfaceOrientation;
     
     [self updateFOV];
+    [self updateZoom];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -168,18 +166,41 @@
 
 #pragma mark - Actions
 
-- (IBAction)handleTap:(id)sender {
+- (IBAction)handlePan:(UIPanGestureRecognizer *)recognizer {
     
-    [self.navigationController setNavigationBarHidden:!self.navigationController.navigationBarHidden animated:YES];
-    [self.navigationController setToolbarHidden:!self.navigationController.toolbarHidden animated:YES];
+    static CGPoint startLocation;
+    static CGFloat startVideoZoom;
+
+    switch (recognizer.state) {
+            
+        case UIGestureRecognizerStateBegan: {
+            
+            startLocation = [recognizer locationInView:self.arView];
+            startVideoZoom = self.arView.currentVideoZoom;
+            break;
+        }
+            
+        case UIGestureRecognizerStateChanged: {
+            
+            CGPoint location = [recognizer locationInView:self.arView];
+            
+            self.arView.currentVideoZoom = startVideoZoom * (1.0 + 2.0 * (startLocation.y - location.y) / CGRectGetHeight(self.arView.bounds));
+            
+            [self updateZoom];
+            break;
+        }
+            
+        default:
+            
+            // Just to avoid compiler warnings
+            break;
+    }
 }
 
-- (IBAction)handlePinch:(id)sender {
+- (IBAction)handlePinch:(UIPinchGestureRecognizer *)recognizer {
 
     static float startPortraitFOV;
     static float startLandscapeFOV;
-    
-    UIPinchGestureRecognizer *recognizer = sender;
     
     switch (recognizer.state) {
             
@@ -187,7 +208,6 @@
             
             startPortraitFOV = self.arView.effectiveFieldOfViewPortrait;
             startLandscapeFOV = self.arView.effectiveFieldOfViewLandscape;
-
             break;
         }
             
@@ -217,13 +237,7 @@
             }
             
             [self updateFOV];
-            
             break;
-        }
-            
-        case UIGestureRecognizerStateEnded:
-        case UIGestureRecognizerStateCancelled: {
-
         }
             
         default:
@@ -271,6 +285,8 @@
         
         [self resetFOV:nil];
     }
+    
+    [self updateZoom];
 }
 
 #pragma mark - FOVARViewDelegate protocol
@@ -311,13 +327,6 @@
     self.arView.shapes = @[ self.verticalShape, self.horizontalShape ];
 }
 
-- (void)updateFOV {
-    
-    NSString *fov = UIInterfaceOrientationIsPortrait(self.interfaceOrientation) ? [NSNumberFormatter localizedStringFromNumber:@(self.arView.effectiveFieldOfViewPortrait) numberStyle:NSNumberFormatterDecimalStyle] : [NSNumberFormatter localizedStringFromNumber:@(self.arView.effectiveFieldOfViewLandscape) numberStyle:NSNumberFormatterDecimalStyle];
-    
-    self.fovLabel.text = [NSString stringWithFormat:@"%@°", fov];
-}
-
 - (void)updateInfo {
     
     NSString *w = [NSNumberFormatter localizedStringFromNumber:@(_currentSize.width) numberStyle:NSNumberFormatterDecimalStyle];
@@ -326,6 +335,30 @@
     NSString *height = [NSNumberFormatter localizedStringFromNumber:@(self.horizontalShape.height) numberStyle:NSNumberFormatterDecimalStyle];
     
     self.infoLabel.text = [NSString stringWithFormat:@"%@cm x %@cm @ %@cm / %@cm", w, h, dist, height];
+}
+
+- (void)updateFOV {
+    
+    NSString *fov = UIInterfaceOrientationIsPortrait(self.interfaceOrientation) ? [NSNumberFormatter localizedStringFromNumber:@(self.arView.effectiveFieldOfViewPortrait) numberStyle:NSNumberFormatterDecimalStyle] : [NSNumberFormatter localizedStringFromNumber:@(self.arView.effectiveFieldOfViewLandscape) numberStyle:NSNumberFormatterDecimalStyle];
+    
+    self.fovLabel.text = [NSString stringWithFormat:@"%@°", fov];
+}
+
+- (void)updateZoom {
+
+    if (self.arView.maxVideoZoom > 1.0) {
+        
+        NSString *zoom = [NSNumberFormatter localizedStringFromNumber:@(self.arView.currentVideoZoom) numberStyle:NSNumberFormatterDecimalStyle];
+        
+        self.zoomLabel.text = [NSString stringWithFormat:@"x%@", zoom];
+        self.zoomLabel.hidden = NO;
+        self.panRecognizer.enabled = YES;
+
+    } else {
+        
+        self.zoomLabel.hidden = YES;
+        self.panRecognizer.enabled = NO;
+    }
 }
 
 - (void)updateLens {
